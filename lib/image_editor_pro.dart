@@ -27,13 +27,13 @@ var howmuchwidgetis = 0;
 List multiwidget = [];
 Color currentcolors = Colors.white;
 var opicity = 0.0;
-SignatureController _controller =
-    SignatureController(penStrokeWidth: 5, penColor: Colors.green);
+SignatureController _controller = SignatureController(penStrokeWidth: 5, penColor: Colors.green);
 
 class ImageEditorPro extends StatefulWidget {
   final Color appBarColor;
   final Color bottomBarColor;
-  ImageEditorPro({this.appBarColor, this.bottomBarColor});
+  final File file;
+  ImageEditorPro({this.appBarColor, this.bottomBarColor, this.file});
 
   @override
   _ImageEditorProState createState() => _ImageEditorProState();
@@ -50,8 +50,7 @@ class _ImageEditorProState extends State<ImageEditorPro> {
   void changeColor(Color color) {
     setState(() => pickerColor = color);
     var points = _controller.points;
-    _controller =
-        SignatureController(penStrokeWidth: 5, penColor: color, points: points);
+    _controller = SignatureController(penStrokeWidth: 5, penColor: color, points: points);
   }
 
   List<Offset> offsets = [];
@@ -85,6 +84,7 @@ class _ImageEditorProState extends State<ImageEditorPro> {
   @override
   void initState() {
     timers();
+    _image = widget.file;
     _controller.clear();
     type.clear();
     fontsize.clear();
@@ -134,13 +134,8 @@ class _ImageEditorProState extends State<ImageEditorPro> {
                                 ),
                                 TextField(
                                     controller: heightcontroler,
-                                    keyboardType:
-                                        TextInputType.numberWithOptions(),
-                                    decoration: InputDecoration(
-                                        hintText: 'Height',
-                                        contentPadding:
-                                            EdgeInsets.only(left: 10),
-                                        border: OutlineInputBorder())),
+                                    keyboardType: TextInputType.numberWithOptions(),
+                                    decoration: InputDecoration(hintText: 'Height', contentPadding: EdgeInsets.only(left: 10), border: OutlineInputBorder())),
                                 SizedBox(
                                   height: 10,
                                 ),
@@ -150,13 +145,8 @@ class _ImageEditorProState extends State<ImageEditorPro> {
                                 ),
                                 TextField(
                                     controller: widthcontroler,
-                                    keyboardType:
-                                        TextInputType.numberWithOptions(),
-                                    decoration: InputDecoration(
-                                        hintText: 'Width',
-                                        contentPadding:
-                                            EdgeInsets.only(left: 10),
-                                        border: OutlineInputBorder())),
+                                    keyboardType: TextInputType.numberWithOptions(),
+                                    decoration: InputDecoration(hintText: 'Width', contentPadding: EdgeInsets.only(left: 10), border: OutlineInputBorder())),
                               ],
                             ),
                           ),
@@ -175,25 +165,23 @@ class _ImageEditorProState extends State<ImageEditorPro> {
                   bottomsheets();
                 }),
             FlatButton(
-                child: Text('Done'),
-                textColor: Colors.white,
-                onPressed: () {
-                  screenshotController
-                      .capture(
-                          delay: Duration(milliseconds: 500), pixelRatio: 1.5)
-                      .then((File image) async {
-                    //print("Capture Done");
-
-                    final paths = await getExternalStorageDirectory();
-                    await image.copy(paths.path +
-                        '/' +
-                        DateTime.now().millisecondsSinceEpoch.toString() +
-                        '.png');
-                    Navigator.pop(context, image);
-                  }).catchError((onError) {
-                    print(onError);
+              textColor: Colors.white,
+              onPressed: () {
+                screenshotController.capture(delay: Duration(milliseconds: 500), pixelRatio: 1.5).then((image) async {
+                  //print("Capture Done");
+                  setState(() {
+                    _image = File.fromRawPath(image);
                   });
-                }),
+
+                  final paths = await getExternalStorageDirectory();
+                  _image = await File.fromRawPath(image).copy(paths.path + '/' + DateTime.now().millisecondsSinceEpoch.toString() + '.png');
+                  Navigator.pop(context, _image);
+                }).catchError((onError) {
+                  print(onError);
+                });
+              },
+              child: Text('Fertig'),
+            ),
           ],
           backgroundColor: widget.appBarColor,
         ),
@@ -222,10 +210,8 @@ class _ImageEditorProState extends State<ImageEditorPro> {
                             onPanUpdate: (DragUpdateDetails details) {
                               setState(() {
                                 RenderBox object = context.findRenderObject();
-                                var _localPosition = object
-                                    .globalToLocal(details.globalPosition);
-                                _points = List.from(_points)
-                                  ..add(_localPosition);
+                                var _localPosition = object.globalToLocal(details.globalPosition);
+                                _points = List.from(_points)..add(_localPosition);
                               });
                             },
                             onPanEnd: (DragEndDetails details) {
@@ -240,8 +226,7 @@ class _ImageEditorProState extends State<ImageEditorPro> {
                                   left: offsets[f.key].dx,
                                   top: offsets[f.key].dy,
                                   ontap: () {
-                                    scaf.currentState
-                                        .showBottomSheet((context) {
+                                    scaf.currentState.showBottomSheet((context) {
                                       return Sliders(
                                         size: f.key,
                                         sizevalue: fontsize[f.key].toDouble(),
@@ -250,9 +235,7 @@ class _ImageEditorProState extends State<ImageEditorPro> {
                                   },
                                   onpanupdate: (details) {
                                     setState(() {
-                                      offsets[f.key] = Offset(
-                                          offsets[f.key].dx + details.delta.dx,
-                                          offsets[f.key].dy + details.delta.dy);
+                                      offsets[f.key] = Offset(offsets[f.key].dx + details.delta.dx, offsets[f.key].dy + details.delta.dy);
                                     });
                                   },
                                   value: f.value.toString(),
@@ -264,22 +247,16 @@ class _ImageEditorProState extends State<ImageEditorPro> {
                                       left: offsets[f.key].dx,
                                       top: offsets[f.key].dy,
                                       ontap: () {
-                                        scaf.currentState
-                                            .showBottomSheet((context) {
+                                        scaf.currentState.showBottomSheet((context) {
                                           return Sliders(
                                             size: f.key,
-                                            sizevalue:
-                                                fontsize[f.key].toDouble(),
+                                            sizevalue: fontsize[f.key].toDouble(),
                                           );
                                         });
                                       },
                                       onpanupdate: (details) {
                                         setState(() {
-                                          offsets[f.key] = Offset(
-                                              offsets[f.key].dx +
-                                                  details.delta.dx,
-                                              offsets[f.key].dy +
-                                                  details.delta.dy);
+                                          offsets[f.key] = Offset(offsets[f.key].dx + details.delta.dx, offsets[f.key].dy + details.delta.dy);
                                         });
                                       },
                                       value: f.value.toString(),
@@ -297,9 +274,7 @@ class _ImageEditorProState extends State<ImageEditorPro> {
         bottomNavigationBar: openbottomsheet
             ? Container()
             : Container(
-                decoration: BoxDecoration(
-                    color: widget.bottomBarColor,
-                    boxShadow: [BoxShadow(blurRadius: 10.9)]),
+                decoration: BoxDecoration(color: widget.bottomBarColor, boxShadow: [BoxShadow(blurRadius: 10.9)]),
                 height: 70,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
@@ -340,10 +315,7 @@ class _ImageEditorProState extends State<ImageEditorPro> {
                     BottomBarContainer(
                       icons: Icons.text_fields,
                       ontap: () async {
-                        final value = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => TextEditor()));
+                        final value = await Navigator.push(context, MaterialPageRoute(builder: (context) => TextEditor()));
                         if (value.toString().isEmpty) {
                           print('true');
                         } else {
@@ -413,9 +385,7 @@ class _ImageEditorProState extends State<ImageEditorPro> {
       context: context,
       builder: (BuildContext context) {
         return Container(
-          decoration: BoxDecoration(color: Colors.white, boxShadow: [
-            BoxShadow(blurRadius: 10.9, color: Colors.grey[400])
-          ]),
+          decoration: BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(blurRadius: 10.9, color: Colors.grey[400])]),
           height: 170,
           child: Column(
             children: <Widget>[
@@ -441,11 +411,8 @@ class _ImageEditorProState extends State<ImageEditorPro> {
                               IconButton(
                                   icon: Icon(Icons.photo_library),
                                   onPressed: () async {
-                                    var image = await picker.getImage(
-                                        source: ImageSource.gallery);
-                                    var decodedImage =
-                                        await decodeImageFromList(
-                                            File(image.path).readAsBytesSync());
+                                    var image = await picker.getImage(source: ImageSource.gallery);
+                                    var decodedImage = await decodeImageFromList(File(image.path).readAsBytesSync());
 
                                     setState(() {
                                       height = decodedImage.height;
@@ -471,10 +438,8 @@ class _ImageEditorProState extends State<ImageEditorPro> {
                             IconButton(
                                 icon: Icon(Icons.camera_alt),
                                 onPressed: () async {
-                                  var image = await picker.getImage(
-                                      source: ImageSource.camera);
-                                  var decodedImage = await decodeImageFromList(
-                                      File(image.path).readAsBytesSync());
+                                  var image = await picker.getImage(source: ImageSource.camera);
+                                  var decodedImage = await decodeImageFromList(File(image.path).readAsBytesSync());
 
                                   setState(() {
                                     height = decodedImage.height;
@@ -525,11 +490,7 @@ class _SignatState extends State<Signat> {
         //SIGNATURE CANVAS
         ListView(
       children: <Widget>[
-        Signature(
-            controller: _controller,
-            height: height.toDouble(),
-            width: width.toDouble(),
-            backgroundColor: Colors.transparent),
+        Signature(controller: _controller, height: height.toDouble(), width: width.toDouble(), backgroundColor: Colors.transparent),
       ],
     );
   }
