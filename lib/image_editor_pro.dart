@@ -174,7 +174,8 @@ class _ImageEditorProState extends State<ImageEditorPro> {
                   });
 
                   final paths = await getExternalStorageDirectory();
-                  _image = await File.fromRawPath(image).copy(paths.path + '/' + DateTime.now().millisecondsSinceEpoch.toString() + '.png');
+                  // _image = await File.fromRawPath(image).copy(paths.path + '/' + DateTime.now().millisecondsSinceEpoch.toString() + '.png');
+                  File.fromRawPath(image).copy(paths.path + '/' + DateTime.now().millisecondsSinceEpoch.toString() + '.png');
                   Navigator.pop(context, _image);
                 }).catchError((onError) {
                   print(onError);
@@ -191,8 +192,8 @@ class _ImageEditorProState extends State<ImageEditorPro> {
             child: Container(
               margin: EdgeInsets.all(20),
               color: Colors.white,
-              width: width.toDouble(),
-              height: height.toDouble(),
+              width: double.infinity,
+              height: double.infinity,
               child: RepaintBoundary(
                   key: globalKey,
                   child: Stack(
@@ -200,8 +201,8 @@ class _ImageEditorProState extends State<ImageEditorPro> {
                       _image != null
                           ? Image.file(
                               _image,
-                              height: height.toDouble(),
-                              width: width.toDouble(),
+                              height: double.infinity,
+                              width: double.infinity,
                               fit: BoxFit.cover,
                             )
                           : Container(),
