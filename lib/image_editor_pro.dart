@@ -491,7 +491,7 @@ class _SignatState extends State<Signat> {
         //SIGNATURE CANVAS
         ListView(
       children: <Widget>[
-        Signature(controller: _controller, height: height.toDouble(), width: width.toDouble(), backgroundColor: Colors.transparent),
+        Signature(controller: _controller, height: double.maxFinite, width: double.maxFinite, backgroundColor: Colors.transparent),
       ],
     );
   }
