@@ -166,20 +166,24 @@ class _ImageEditorProState extends State<ImageEditorPro> {
                 }),
             FlatButton(
               textColor: Colors.white,
-              onPressed: () {
-                screenshotController.capture(delay: Duration(milliseconds: 500), pixelRatio: 1.5).then((image) async {
-                  //print("Capture Done");
-                  setState(() {
-                    _image = File.fromRawPath(image);
-                  });
+              onPressed: () async {
+                final directory = await getExternalStorageDirectory();
+                final filename = directory.path + '/' + DateTime.now().millisecondsSinceEpoch.toString() + '.png';
+                var result = await screenshotController.captureAndSave(directory.path, fileName: filename, delay: Duration(milliseconds: 500), pixelRatio: 1.5);
+                Navigator.pop(context, File(result));
+                // screenshotController.capture(delay: Duration(milliseconds: 500), pixelRatio: 1.5).then((image) async {
+                //   //print("Capture Done");
+                //   setState(() {
+                //     _image = File.fromRawPath(image);
+                //   });
 
-                  final paths = await getExternalStorageDirectory();
-                  // _image = await File.fromRawPath(image).copy(paths.path + '/' + DateTime.now().millisecondsSinceEpoch.toString() + '.png');
-                  File.fromRawPath(image).copy(paths.path + '/' + DateTime.now().millisecondsSinceEpoch.toString() + '.png');
-                  Navigator.pop(context, _image);
-                }).catchError((onError) {
-                  print(onError);
-                });
+                //   final paths = await getExternalStorageDirectory();
+                //   // _image = await File.fromRawPath(image).copy(paths.path + '/' + DateTime.now().millisecondsSinceEpoch.toString() + '.png');
+                //   File.fromRawPath(image).copy(paths.path + '/' + DateTime.now().millisecondsSinceEpoch.toString() + '.png');
+                //   Navigator.pop(context, _image);
+                // }).catchError((onError) {
+                //   print(onError);
+                // });
               },
               child: Text('Fertig'),
             ),
